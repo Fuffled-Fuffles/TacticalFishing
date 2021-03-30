@@ -1,0 +1,20 @@
+modLoader="javafml"
+loaderVersion="[35,)"
+license="All rights reserved"
+
+[[mods]]
+	modId="tactical_fishing"
+	version="1.0"
+	displayName="Tactical Fishing"
+	displayURL="https://www.curseforge.com/minecraft/mc-mods/tactical-fishing/"
+	logoFile="modicon.png"
+	credits="PedroRalof"
+	authors="Fuffles_"
+	description='''Makes it possible to make Buckets of Fish while fishing with Water Buckets.'''
+
+[[dependencies.tactical_fishing]]
+    modId="forge"
+    mandatory=true
+    versionRange="[35,)"
+    ordering="NONE"
+    side="BOTH"
