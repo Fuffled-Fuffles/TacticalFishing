@@ -4,7 +4,7 @@ license="All rights reserved"
 
 [[mods]]
 	modId="tactical_fishing"
-	version="1.0"
+	version="1.0.1"
 	displayName="Tactical Fishing"
 	displayURL="https://www.curseforge.com/minecraft/mc-mods/tactical-fishing/"
 	logoFile="modicon.png"

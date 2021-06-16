@@ -1,0 +1,29 @@
+{
+	"parent": "minecraft:husbandry/tactical_fishing",
+	"display": {
+		"icon": {
+			"item": "minecraft:tropical_fish_bucket"
+    	},
+		"title": {
+			"translate": "advancements.tactical_fishing.husbandry.advanced_tactics.title"
+		},
+		"description": {
+			"translate": "advancements.tactical_fishing.husbandry.advanced_tactics.description"
+    	},
+    	"frame": "challenge",
+    	"show_toast": true,
+    	"announce_to_chat": true,
+    	"hidden": false
+	},
+  	"criteria": {
+    	"custom_init": {
+      		"trigger": "minecraft:impossible",
+      		"conditions": {}
+    	}
+  	},
+  	"requirements": [
+    	[
+      		"custom_init"
+    	]
+  	]
+}

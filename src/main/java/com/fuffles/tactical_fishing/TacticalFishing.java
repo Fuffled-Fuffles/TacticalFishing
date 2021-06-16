@@ -3,7 +3,9 @@ package com.fuffles.tactical_fishing;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import net.minecraft.advancements.Advancement;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
@@ -18,12 +20,30 @@ import net.minecraftforge.registries.ForgeRegistries;
 public class TacticalFishing
 {
 	public static final Logger LOG = LogManager.getLogger();
+
+	private static final ResourceLocation ADVANCEMENT = new ResourceLocation("tactical_fishing", "husbandry/advanced_tactics");
 	
     public TacticalFishing()
     {
         MinecraftForge.EVENT_BUS.addListener(this::onItemFished);
     }
 
+    private void grantAdvancement(ServerPlayerEntity ent, ResourceLocation advancement_id)
+    {
+    	Advancement advancement = ent.getServer().getAdvancements().getAdvancement(advancement_id);
+    	if (advancement != null && !ent.getAdvancements().getOrStartProgress(advancement).isDone())
+    	{
+    		for (String str : ent.getAdvancements().getOrStartProgress(advancement).getRemainingCriteria())
+    		{
+    			ent.getAdvancements().award(advancement, str);
+    		}
+    	}
+    	else if (!ent.getAdvancements().getOrStartProgress(advancement).isDone())
+    	{
+    		LOG.warn("Couldn't award the '" + advancement_id.toString() + "' advancement");
+    	}
+    }
+    
     public void onItemFished(ItemFishedEvent event)
     {
     	PlayerEntity player = event.getPlayer();
@@ -45,6 +65,10 @@ public class TacticalFishing
     				if (possible_bucket != null && !possible_bucket.equals(Items.AIR))
     				{
     					player.setItemInHand(bucket_carrier, possible_bucket.getDefaultInstance());
+    					if (player instanceof ServerPlayerEntity)
+    					{
+    						grantAdvancement((ServerPlayerEntity)player, ADVANCEMENT);
+    					}
     					event.setCanceled(true);
     					break;
     				}
