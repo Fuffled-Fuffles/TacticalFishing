@@ -1,4 +1,6 @@
 {
 	"advancements.tactical_fishing.husbandry.advanced_tactics.title": "Advanced Tactics",
-	"advancements.tactical_fishing.husbandry.advanced_tactics.description": "Catch a fish into a bucket by putting a water bucket in one hand and a fishing rod in the other"
+	"advancements.tactical_fishing.husbandry.advanced_tactics.description": "Catch a fish by putting a water bucket in one hand and a fishing rod in the other",
+	
+	"jei.recipe_category.tactical_fishing.fishing": "Fishing"
 }

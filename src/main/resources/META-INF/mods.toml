@@ -1,10 +1,10 @@
 modLoader="javafml"
-loaderVersion="[35,)"
-license="All rights reserved"
+loaderVersion="[39,)"
+license="Check Curseforge for details"
 
 [[mods]]
 	modId="tactical_fishing"
-	version="1.0.1"
+	version="1.1"
 	displayName="Tactical Fishing"
 	displayURL="https://www.curseforge.com/minecraft/mc-mods/tactical-fishing/"
 	logoFile="modicon.png"
@@ -15,6 +15,6 @@ license="All rights reserved"
 [[dependencies.tactical_fishing]]
     modId="forge"
     mandatory=true
-    versionRange="[35,)"
+    versionRange="[39,)"
     ordering="NONE"
     side="BOTH"

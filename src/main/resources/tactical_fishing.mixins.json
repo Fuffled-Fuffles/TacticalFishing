@@ -1,0 +1,17 @@
+{
+	"required": true,
+	"package": "com.fuffles.tactical_fishing.mixin",
+	"compatibilityLevel": "JAVA_16",
+	"minVersion": "0.8.5",
+	"refmap": "tactical_fishing.refmap.json",
+	"mixins": [
+		"ItemEntityMixin",
+		"MinecraftServerMixin"
+	],
+	"client": [
+		"ClientRecipeBookMixin"
+	],
+  	"injectors": {
+		"defaultRequire": 1
+  	}
+}

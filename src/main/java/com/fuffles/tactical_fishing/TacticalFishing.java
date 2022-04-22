@@ -1,79 +1,147 @@
 package com.fuffles.tactical_fishing;
 
+import java.util.Optional;
+
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import net.minecraft.advancements.Advancement;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import net.minecraft.util.Hand;
-import net.minecraft.util.ResourceLocation;
-import net.minecraftforge.common.MinecraftForge;
+import com.fuffles.tactical_fishing.common.Registry;
+import com.fuffles.tactical_fishing.common.entity.FishingVisual;
+import com.fuffles.tactical_fishing.common.item.crafting.FishingRecipe;
+import com.fuffles.tactical_fishing.lib.RecipeTypes;
+
+import net.minecraft.core.NonNullList;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.projectile.FishingHook;
+import net.minecraft.world.item.ItemStack;
+import net.minecraftforge.common.ForgeConfigSpec;
+import net.minecraftforge.common.ForgeConfigSpec.BooleanValue;
 import net.minecraftforge.event.entity.player.ItemFishedEvent;
+import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.registries.ForgeRegistries;
+import net.minecraftforge.fml.config.ModConfig;
 
-@Mod("tactical_fishing")
-public class TacticalFishing
+@Mod(TacticalFishing.ID)
+public class TacticalFishing implements Proxy
 {
+	public static final String ID = "tactical_fishing";
 	public static final Logger LOG = LogManager.getLogger();
-
-	private static final ResourceLocation ADVANCEMENT = new ResourceLocation("tactical_fishing", "husbandry/advanced_tactics");
+	
+	public static void DEBUG(String str) { if (TacticalFishing.Config.COMMON.debug.get()) { TacticalFishing.LOG.debug(str); } }
+	public static boolean DEBUG(boolean bool, String str) { TacticalFishing.DEBUG(str); return bool; }
 	
     public TacticalFishing()
     {
-        MinecraftForge.EVENT_BUS.addListener(this::onItemFished);
+    	ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, Config.COMMON_SPEC, TacticalFishing.ID + ".toml");
+        this.init();
     }
-
-    private void grantAdvancement(ServerPlayerEntity ent, ResourceLocation advancement_id)
+    
+    @Override
+	public void init() 
     {
-    	Advancement advancement = ent.getServer().getAdvancements().getAdvancement(advancement_id);
-    	if (advancement != null && !ent.getAdvancements().getOrStartProgress(advancement).isDone())
-    	{
-    		for (String str : ent.getAdvancements().getOrStartProgress(advancement).getRemainingCriteria())
-    		{
-    			ent.getAdvancements().award(advancement, str);
-    		}
-    	}
-    	else if (!ent.getAdvancements().getOrStartProgress(advancement).isDone())
-    	{
-    		LOG.warn("Couldn't award the '" + advancement_id.toString() + "' advancement");
-    	}
+    	this.getFMLBus().register(Registry.class);
+    	
+		this.getForgeBus().addListener(this::onItemFished);
+	}
+    
+    private Optional<FishingRecipe> tryMatch(FishingRecipe recipe, ServerPlayer player, NonNullList<ItemStack> fish)
+    {
+    	return recipe.matches("INITIAL", player.getInventory(), fish) ? Optional.of(recipe) : Optional.empty();
+    }
+    
+    private Optional<FishingRecipe> getFishingRecipe(ServerPlayer player, NonNullList<ItemStack> fish)
+    {
+    	return player.getServer().getRecipeManager().byType(RecipeTypes.FISHING).values().stream().flatMap((recipe) -> {
+    		return this.tryMatch((FishingRecipe)recipe, player, fish).stream();
+    	}).findFirst();
     }
     
     public void onItemFished(ItemFishedEvent event)
     {
-    	PlayerEntity player = event.getPlayer();
-    	if (player != null)
+    	Player player = event.getPlayer();
+    	if (player != null && !player.level.isClientSide && !event.isCanceled())
     	{
-    		Hand bucket_carrier = player.getItemInHand(Hand.MAIN_HAND).getItem().equals(Items.WATER_BUCKET) ? Hand.MAIN_HAND : 
-    			player.getItemInHand(Hand.OFF_HAND).getItem().equals(Items.WATER_BUCKET) ? Hand.OFF_HAND : 
-    			null;
-    		if (bucket_carrier != null)
+    		ServerPlayer sPlayer = (ServerPlayer)player;
+    		Optional<FishingRecipe> matches = this.getFishingRecipe(sPlayer, event.getDrops());
+    		if (matches.isPresent())
     		{
-    			for (ItemStack drop : event.getDrops())
+    			FishingRecipe recipe = matches.get();
+    			FishingHook hook = event.getHookEntity();
+    			for (ItemStack fish : event.getDrops())
     			{
-    				String key = drop.getItem().getRegistryName().getPath();
-    				if (key.contains("raw_"))
+    				if (recipe.getCatch().test(fish))
     				{
-    					key = key.substring(4);
-    				}
-    				Item possible_bucket = ForgeRegistries.ITEMS.getValue(new ResourceLocation(drop.getItem().getRegistryName().getNamespace(), key + "_bucket"));
-    				if (possible_bucket != null && !possible_bucket.equals(Items.AIR))
-    				{
-    					player.setItemInHand(bucket_carrier, possible_bucket.getDefaultInstance());
-    					if (player instanceof ServerPlayerEntity)
+    					ItemEntity visual = new ItemEntity(hook.level, hook.getX(), hook.getY(), hook.getZ(), fish);
+    					double dx = player.getX() - hook.getX();
+    					double dy = player.getY() - hook.getY();
+    					double dz = player.getZ() - hook.getZ();
+    					double vel = 0.1D;
+    					visual.setDeltaMovement(dx * vel, dy * vel + Math.sqrt(Math.sqrt(dx * dx + dy * dy + dz * dz)) * 0.08D, dz * 0.1D);
+    					if (visual instanceof FishingVisual fv)
     					{
-    						grantAdvancement((ServerPlayerEntity)player, ADVANCEMENT);
+    						fv.setFishingRecipe(recipe);
     					}
-    					event.setCanceled(true);
+    					hook.level.addFreshEntity(visual);
     					break;
     				}
     			}
+    			event.setCanceled(true);
     		}
     	}
+    }
+    
+    public static class Config
+    {
+    	public static class Common
+    	{
+    		public final BooleanValue debug;
+    		public final BooleanValue writeDatapack;
+    		public final BooleanValue verifyDatapack;
+    		public final BooleanValue writeFishBucketRecipes;
+    		
+    		private Common(ForgeConfigSpec.Builder builder) 
+    		{
+    			builder.push("general");
+    			
+    			this.debug = Config.build(builder, "Debug", false,
+    				"When true writes a step-by-step feedback to your log file when the mod is testing if a certain combination matches a recipe's requirement; Default: false"
+    			);
+    			
+    			this.writeDatapack = Config.build(builder, "WriteDatapack", true, 
+    				"When true writes the in-built datapack on world creation; Default: true",
+    				"Keep in mind if you set this to false there will be no 'tactical_fishing:fishing_rods' tag nor any of the fish bucket recipes"
+    			);
+    			builder.pop();
+    			builder.push("datapack");
+    			
+    			this.verifyDatapack = Config.build(builder, "VerifyDatapack", true, 
+    				"When true makes sure to update the datapack if your mod list changes; Default: true"
+    			);
+    			
+    			this.writeFishBucketRecipes = Config.build(builder, "WriteFishBucketRecipes", true,
+    				"When true writes .json files for each possible fish bucket; Default: true",
+    				"If you want to use this mod for the fishing crafting without the fish buckets, you should set this to false"
+    			);
+    			
+    			builder.pop();
+    		}
+    	}
+    	
+    	private static final ForgeConfigSpec COMMON_SPEC;
+        public static final Common COMMON;
+        static 
+        {
+            Pair<Common, ForgeConfigSpec> specPair = new ForgeConfigSpec.Builder().configure(Common::new);
+            COMMON_SPEC = specPair.getRight();
+            COMMON = specPair.getLeft();
+        }
+    	
+    	private static BooleanValue build(ForgeConfigSpec.Builder builder, String key, boolean def, String... comments)
+		{
+			return builder.comment(comments).define(key, def);
+		}
     }
 }

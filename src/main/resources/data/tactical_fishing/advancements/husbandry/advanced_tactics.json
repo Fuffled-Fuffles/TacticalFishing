@@ -16,14 +16,18 @@
     	"hidden": false
 	},
   	"criteria": {
-    	"custom_init": {
-      		"trigger": "minecraft:impossible",
-      		"conditions": {}
+    	"craft_fish_bucket": {
+      		"trigger": "tactical_fishing:fishing_crafting",
+      		"conditions": {
+      			"recipe": {
+      				"group": "tactical_fishing:fish_buckets"
+      			}
+      		}
     	}
   	},
   	"requirements": [
     	[
-      		"custom_init"
+			"craft_fish_bucket"
     	]
   	]
 }
