@@ -13,10 +13,9 @@ import mezz.jei.api.gui.ingredient.IGuiItemStackGroup;
 import mezz.jei.api.helpers.IGuiHelper;
 import mezz.jei.api.ingredients.IIngredients;
 import mezz.jei.api.recipe.category.IRecipeCategory;
-import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.TranslatableComponent;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.item.Items;
+import net.minecraft.item.Items;
+import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.text.LanguageMap;
 import net.minecraftforge.fluids.FluidStack;
 
 public class FishingRecipeCategory implements IRecipeCategory<FishingRecipe>
@@ -33,9 +32,9 @@ public class FishingRecipeCategory implements IRecipeCategory<FishingRecipe>
 	}
 	
 	@Override
-	public Component getTitle() 
+	public String getTitle() 
 	{
-		return new TranslatableComponent("jei.recipe_category.tactical_fishing.fishing");
+		return LanguageMap.getInstance().getOrDefault("jei.recipe_category.tactical_fishing.fishing");
 	}
 
 	@Override

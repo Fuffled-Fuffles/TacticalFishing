@@ -2,7 +2,7 @@ package com.fuffles.tactical_fishing.lib;
 
 import com.fuffles.tactical_fishing.TacticalFishing;
 
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.ResourceLocation;
 
 public class Resources 
 {

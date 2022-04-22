@@ -1,7 +1,7 @@
 {
 	"required": true,
 	"package": "com.fuffles.tactical_fishing.mixin",
-	"compatibilityLevel": "JAVA_16",
+	"compatibilityLevel": "JAVA_8",
 	"minVersion": "0.8.4",
 	"refmap": "tactical_fishing.refmap.json",
 	"mixins": [

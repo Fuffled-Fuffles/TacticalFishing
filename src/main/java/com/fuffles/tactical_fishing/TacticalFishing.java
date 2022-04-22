@@ -11,13 +11,13 @@ import com.fuffles.tactical_fishing.common.entity.FishingVisual;
 import com.fuffles.tactical_fishing.common.item.crafting.FishingRecipe;
 import com.fuffles.tactical_fishing.lib.RecipeTypes;
 
-import net.minecraft.Util;
-import net.minecraft.core.NonNullList;
-import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.entity.item.ItemEntity;
-import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.entity.projectile.FishingHook;
-import net.minecraft.world.item.ItemStack;
+import net.minecraft.util.NonNullList;
+import net.minecraft.util.Util;
+import net.minecraft.entity.item.ItemEntity;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.entity.player.ServerPlayerEntity;
+import net.minecraft.entity.projectile.FishingBobberEntity;
+import net.minecraft.item.ItemStack;
 import net.minecraftforge.common.ForgeConfigSpec;
 import net.minecraftforge.common.ForgeConfigSpec.BooleanValue;
 import net.minecraftforge.event.entity.player.ItemFishedEvent;
@@ -48,13 +48,13 @@ public class TacticalFishing implements Proxy
 		this.getForgeBus().addListener(this::onItemFished);
 	}
     
-    private Optional<FishingRecipe> tryMatch(FishingRecipe recipe, ServerPlayer player, NonNullList<ItemStack> fish)
+    private Optional<FishingRecipe> tryMatch(FishingRecipe recipe, ServerPlayerEntity player, NonNullList<ItemStack> fish)
     {
-    	return recipe.matches("INITIAL", player.getInventory(), fish) ? Optional.of(recipe) : Optional.empty();
+    	return recipe.matches("INITIAL", player.inventory, fish) ? Optional.of(recipe) : Optional.empty();
     }
     
-    private Optional<FishingRecipe> getFishingRecipe(ServerPlayer player, NonNullList<ItemStack> fish)
-    {
+    private Optional<FishingRecipe> getFishingRecipe(ServerPlayerEntity player, NonNullList<ItemStack> fish)
+    {    	
     	return player.getServer().getRecipeManager().byType(RecipeTypes.FISHING).values().stream().flatMap((recipe) -> {
     		return Util.toStream(this.tryMatch((FishingRecipe)recipe, player, fish));
     	}).findFirst();
@@ -62,15 +62,15 @@ public class TacticalFishing implements Proxy
     
     public void onItemFished(ItemFishedEvent event)
     {
-    	Player player = event.getPlayer();
+    	PlayerEntity player = event.getPlayer();
     	if (player != null && !player.level.isClientSide && !event.isCanceled())
     	{
-    		ServerPlayer sPlayer = (ServerPlayer)player;
+    		ServerPlayerEntity sPlayer = (ServerPlayerEntity)player;
     		Optional<FishingRecipe> matches = this.getFishingRecipe(sPlayer, event.getDrops());
     		if (matches.isPresent())
     		{
     			FishingRecipe recipe = matches.get();
-    			FishingHook hook = event.getHookEntity();
+    			FishingBobberEntity hook = event.getHookEntity();
     			for (ItemStack fish : event.getDrops())
     			{
     				if (recipe.getCatch().test(fish))
@@ -81,9 +81,9 @@ public class TacticalFishing implements Proxy
     					double dz = player.getZ() - hook.getZ();
     					double vel = 0.1D;
     					visual.setDeltaMovement(dx * vel, dy * vel + Math.sqrt(Math.sqrt(dx * dx + dy * dy + dz * dz)) * 0.08D, dz * 0.1D);
-    					if (visual instanceof FishingVisual fv)
+    					if (visual instanceof FishingVisual)
     					{
-    						fv.setFishingRecipe(recipe);
+    						((FishingVisual)visual).setFishingRecipe(recipe);
     					}
     					hook.level.addFreshEntity(visual);
     					break;

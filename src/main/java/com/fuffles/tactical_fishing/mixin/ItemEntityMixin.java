@@ -11,24 +11,24 @@ import com.fuffles.tactical_fishing.common.entity.FishingVisual;
 import com.fuffles.tactical_fishing.common.item.crafting.FishingRecipe;
 import com.fuffles.tactical_fishing.lib.CriteriaTriggers;
 
-import net.minecraft.core.NonNullList;
-import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.sounds.SoundEvents;
-import net.minecraft.world.InteractionHand;
-import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.ExperienceOrb;
-import net.minecraft.world.entity.item.ItemEntity;
-import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.Level;
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityType;
+import net.minecraft.entity.item.ExperienceOrbEntity;
+import net.minecraft.entity.item.ItemEntity;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.entity.player.ServerPlayerEntity;
+import net.minecraft.item.ItemStack;
+import net.minecraft.util.Hand;
+import net.minecraft.util.NonNullList;
+import net.minecraft.util.SoundEvents;
+import net.minecraft.world.World;
 
 @Mixin(ItemEntity.class)
 public abstract class ItemEntityMixin extends Entity implements FishingVisual
 {
 	private FishingRecipe fishingRecipe = null;
 
-	private ItemEntityMixin(EntityType<?> arg, Level arg2) { super(arg, arg2); }
+	private ItemEntityMixin(EntityType<?> arg, World arg2) { super(arg, arg2); }
 	
 	@Shadow
 	public ItemStack getItem() { return ItemStack.EMPTY; }
@@ -60,23 +60,23 @@ public abstract class ItemEntityMixin extends Entity implements FishingVisual
 		}
 	}
 	
-	@Inject(method = "playerTouch(Lnet/minecraft/world/entity/player/Player;)V", at = @At("HEAD"), cancellable = true)
-	public void playerTouch(Player player, CallbackInfo cb) 
+	@Inject(method = "playerTouch(Lnet/minecraft/entity/player/PlayerEntity;)V", at = @At("HEAD"), cancellable = true)
+	public void playerTouch(PlayerEntity player, CallbackInfo cb) 
 	{
 		if (!this.level.isClientSide) 
 		{
 			if (this.isFishingVisual())
     		{
     			FishingRecipe recipe = this.getFishingRecipe();
-    			if (recipe.matches("VERIFY", player.getInventory(), NonNullList.of(ItemStack.EMPTY, this.getItem())))
+    			if (recipe.matches("VERIFY", player.inventory, NonNullList.of(ItemStack.EMPTY, this.getItem())))
     			{
-    				InteractionHand targetHand = recipe.getIngredient().test(player.getItemInHand(InteractionHand.MAIN_HAND)) ? InteractionHand.MAIN_HAND : InteractionHand.OFF_HAND;
+    				Hand targetHand = recipe.getIngredient().test(player.getItemInHand(Hand.MAIN_HAND)) ? Hand.MAIN_HAND : Hand.OFF_HAND;
         			player.setItemInHand(targetHand, recipe.assemble(null));
         			player.swing(targetHand, true);
         			player.level.playLocalSound(player.getX(), player.getY() + 1D, player.getZ(), SoundEvents.GENERIC_SPLASH, player.getSoundSource(), 0.8F, 0.8F + player.level.random.nextFloat() * 0.4F, false);
-        			player.level.addFreshEntity(new ExperienceOrb(player.level, player.getX(), player.getY() + 0.5D, player.getZ() + 0.5D, this.random.nextInt(6) + 1));
-        			CriteriaTriggers.FISHING_CRAFTING.trigger((ServerPlayer)player, recipe);
-        			this.discard();
+        			player.level.addFreshEntity(new ExperienceOrbEntity(player.level, player.getX(), player.getY() + 0.5D, player.getZ() + 0.5D, this.random.nextInt(6) + 1));
+        			CriteriaTriggers.FISHING_CRAFTING.trigger((ServerPlayerEntity)player, recipe);
+        			this.remove();
         			cb.cancel();
     			}
     			else

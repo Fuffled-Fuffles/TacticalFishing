@@ -7,24 +7,24 @@ import com.fuffles.tactical_fishing.lib.Resources;
 import com.google.common.collect.Lists;
 import com.google.gson.JsonObject;
 
-import net.minecraft.core.NonNullList;
-import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.util.GsonHelper;
-import net.minecraft.world.Container;
-import net.minecraft.world.entity.player.Inventory;
-import net.minecraft.world.item.FishingRodItem;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
-import net.minecraft.world.item.crafting.Ingredient;
-import net.minecraft.world.item.crafting.Recipe;
-import net.minecraft.world.item.crafting.RecipeSerializer;
-import net.minecraft.world.item.crafting.RecipeType;
-import net.minecraft.world.item.crafting.ShapedRecipe;
-import net.minecraft.world.level.Level;
+import net.minecraft.entity.player.PlayerInventory;
+import net.minecraft.inventory.IInventory;
+import net.minecraft.item.FishingRodItem;
+import net.minecraft.item.ItemStack;
+import net.minecraft.item.Items;
+import net.minecraft.item.crafting.IRecipe;
+import net.minecraft.item.crafting.IRecipeSerializer;
+import net.minecraft.item.crafting.IRecipeType;
+import net.minecraft.item.crafting.Ingredient;
+import net.minecraft.item.crafting.ShapedRecipe;
+import net.minecraft.network.PacketBuffer;
+import net.minecraft.util.JSONUtils;
+import net.minecraft.util.NonNullList;
+import net.minecraft.util.ResourceLocation;
+import net.minecraft.world.World;
 import net.minecraftforge.registries.ForgeRegistryEntry;
 
-public class FishingRecipe implements Recipe<Container>
+public class FishingRecipe implements IRecipe<IInventory>
 {
 	private final ResourceLocation id;
 	private final String group;
@@ -59,12 +59,12 @@ public class FishingRecipe implements Recipe<Container>
 	
 	@Override
 	@Deprecated
-	public boolean matches(Container container, Level level) 
+	public boolean matches(IInventory container, World level) 
 	{
 		return false;
 	}
 	
-	public boolean matches(String debugPhase, Inventory playerInv, NonNullList<ItemStack> fish)
+	public boolean matches(String debugPhase, PlayerInventory playerInv, NonNullList<ItemStack> fish)
 	{
 		ItemStack main = playerInv.getSelected();
 		ItemStack off = playerInv.offhand.get(0);
@@ -99,7 +99,7 @@ public class FishingRecipe implements Recipe<Container>
 	}
 	
 	@Override
-	public ItemStack assemble(Container container) 
+	public ItemStack assemble(IInventory container) 
 	{
 		return this.getResultItem().copy();
 	}
@@ -150,18 +150,18 @@ public class FishingRecipe implements Recipe<Container>
 	}
 	
 	@Override
-	public RecipeSerializer<FishingRecipe> getSerializer() 
+	public IRecipeSerializer<FishingRecipe> getSerializer() 
 	{
 		return RecipeSerializers.FISHING;
 	}
 
 	@Override
-	public RecipeType<?> getType()
+	public IRecipeType<?> getType()
 	{
 		return RecipeTypes.FISHING;
 	}
 	
-	public static class Serializer extends ForgeRegistryEntry<RecipeSerializer<?>> implements RecipeSerializer<FishingRecipe>
+	public static class Serializer extends ForgeRegistryEntry<IRecipeSerializer<?>> implements IRecipeSerializer<FishingRecipe>
 	{
 		public Serializer()
 		{
@@ -171,16 +171,16 @@ public class FishingRecipe implements Recipe<Container>
 		@Override
 		public FishingRecipe fromJson(ResourceLocation id, JsonObject json) 
 		{
-			String group = GsonHelper.getAsString(json, "group", "");
-			Ingredient rod = Ingredient.fromJson(GsonHelper.getAsJsonObject(json, "rod"));
-			Ingredient ingredient = Ingredient.fromJson(GsonHelper.getAsJsonObject(json, "ingredient"));
-			Ingredient fish = Ingredient.fromJson(GsonHelper.getAsJsonObject(json, "catch"));
-			ItemStack result = ShapedRecipe.itemStackFromJson(GsonHelper.getAsJsonObject(json, "result"));
+			String group = JSONUtils.getAsString(json, "group", "");
+			Ingredient rod = Ingredient.fromJson(JSONUtils.getAsJsonObject(json, "rod"));
+			Ingredient ingredient = Ingredient.fromJson(JSONUtils.getAsJsonObject(json, "ingredient"));
+			Ingredient fish = Ingredient.fromJson(JSONUtils.getAsJsonObject(json, "catch"));
+			ItemStack result = ShapedRecipe.itemFromJson(JSONUtils.getAsJsonObject(json, "result"));
 			return new FishingRecipe(id, group, rod, ingredient, fish, result);
 		}
 
 		@Override
-		public FishingRecipe fromNetwork(ResourceLocation id, FriendlyByteBuf buffer) 
+		public FishingRecipe fromNetwork(ResourceLocation id, PacketBuffer buffer) 
 		{
 			String group = buffer.readUtf();
 			Ingredient rod = Ingredient.fromNetwork(buffer);
@@ -191,7 +191,7 @@ public class FishingRecipe implements Recipe<Container>
 		}
 
 		@Override
-		public void toNetwork(FriendlyByteBuf buffer, FishingRecipe recipe) 
+		public void toNetwork(PacketBuffer buffer, FishingRecipe recipe) 
 		{
 			buffer.writeUtf(recipe.getGroup());
 			recipe.rod.toNetwork(buffer);

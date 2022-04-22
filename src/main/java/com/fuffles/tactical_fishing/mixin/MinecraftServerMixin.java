@@ -10,32 +10,31 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import com.fuffles.tactical_fishing.DatapackWriter;
 import com.fuffles.tactical_fishing.TacticalFishing;
 
-import net.minecraft.SharedConstants;
+import net.minecraft.resources.FolderPackFinder;
+import net.minecraft.resources.IPackFinder;
+import net.minecraft.resources.IPackNameDecorator;
+import net.minecraft.resources.ResourcePackList;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.packs.PackType;
-import net.minecraft.server.packs.repository.FolderRepositorySource;
-import net.minecraft.server.packs.repository.PackRepository;
-import net.minecraft.server.packs.repository.PackSource;
-import net.minecraft.server.packs.repository.RepositorySource;
-import net.minecraft.world.level.DataPackConfig;
+import net.minecraft.util.SharedConstants;
+import net.minecraft.util.datafix.codec.DatapackCodec;
 
 @Mixin(MinecraftServer.class)
 public class MinecraftServerMixin 
 {
-	@Inject(method = "configurePackRepository(Lnet/minecraft/server/packs/repository/PackRepository;Lnet/minecraft/world/level/DataPackConfig;Z)Lnet/minecraft/world/level/DataPackConfig;", at = @At("HEAD"))
-	private static void configurePackRepository(PackRepository packRepo, DataPackConfig config, boolean flag, CallbackInfoReturnable<DataPackConfig> cbr) 
+	@Inject(method = "configurePackRepository(Lnet/minecraft/resources/ResourcePackList;Lnet/minecraft/util/datafix/codec/DatapackCodec;Z)Lnet/minecraft/util/datafix/codec/DatapackCodec;", at = @At("HEAD"))
+	private static void configurePackRepository(ResourcePackList packRepo, DatapackCodec config, boolean flag, CallbackInfoReturnable<DatapackCodec> cbr) 
 	{
 		if (TacticalFishing.Config.COMMON.writeDatapack.get() == true)
 		{
-			for (RepositorySource repo : packRepo.sources)
+			for (IPackFinder repo : packRepo.sources)
 			{
-				if (repo instanceof FolderRepositorySource folderRepo && folderRepo.packSource == PackSource.WORLD)
+				if (repo instanceof FolderPackFinder && ((FolderPackFinder)repo).packSource == IPackNameDecorator.WORLD)
 				{
-					if (!folderRepo.folder.isDirectory())
+					if (!((FolderPackFinder)repo).folder.isDirectory())
 					{
-						folderRepo.folder.mkdirs();
+						((FolderPackFinder)repo).folder.mkdirs();
 					}
-					File tacticalFishing = new File(folderRepo.folder, TacticalFishing.ID + " (in-built)");
+					File tacticalFishing = new File(((FolderPackFinder)repo).folder, TacticalFishing.ID + " (in-built)");
 					if (!tacticalFishing.exists() || DatapackWriter.isPackOutdated(tacticalFishing))
 					{
 						long timestamp = System.currentTimeMillis();
@@ -43,7 +42,8 @@ public class MinecraftServerMixin
 						{
 							tacticalFishing.mkdir();
 						}
-						DatapackWriter.write(tacticalFishing, TacticalFishing.ID, PackType.SERVER_DATA.getVersion(SharedConstants.getCurrentVersion()), "In-built fish bucket recipes for Tactical Fishing");
+						
+						DatapackWriter.write(tacticalFishing, TacticalFishing.ID, SharedConstants.getCurrentVersion().getPackVersion(), "In-built fish bucket recipes for Tactical Fishing");
 						TacticalFishing.LOG.info("In-built datapack successfully created/updated in " + ((double)(System.currentTimeMillis() - timestamp) / 1000.0D) + "s");
 					}
 					else

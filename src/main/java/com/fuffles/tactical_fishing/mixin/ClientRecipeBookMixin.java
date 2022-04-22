@@ -7,15 +7,15 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import com.fuffles.tactical_fishing.lib.RecipeTypes;
 
-import net.minecraft.client.ClientRecipeBook;
-import net.minecraft.client.RecipeBookCategories;
-import net.minecraft.world.item.crafting.Recipe;
+import net.minecraft.client.util.ClientRecipeBook;
+import net.minecraft.client.util.RecipeBookCategories;
+import net.minecraft.item.crafting.IRecipe;
 
 @Mixin(ClientRecipeBook.class)
 public class ClientRecipeBookMixin 
 {
-	@Inject(method = "getCategory(Lnet/minecraft/world/item/crafting/Recipe;)Lnet/minecraft/client/RecipeBookCategories;", at = @At("HEAD"), cancellable = true)
-	private static void getCategory(Recipe<?> recipe, CallbackInfoReturnable<RecipeBookCategories> cbr)
+	@Inject(method = "getCategory(Lnet/minecraft/item/crafting/IRecipe;)Lnet/minecraft/client/util/RecipeBookCategories;", at = @At("HEAD"), cancellable = true)
+	private static void getCategory(IRecipe<?> recipe, CallbackInfoReturnable<RecipeBookCategories> cbr)
 	{
 		if (recipe.getType() == RecipeTypes.FISHING)
 		{

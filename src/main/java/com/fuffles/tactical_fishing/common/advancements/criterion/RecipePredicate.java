@@ -8,14 +8,14 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonNull;
 import com.google.gson.JsonObject;
 
-import net.minecraft.core.NonNullList;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.util.GsonHelper;
-import net.minecraft.world.Container;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.crafting.Ingredient;
-import net.minecraft.world.item.crafting.Recipe;
-import net.minecraft.world.item.crafting.ShapedRecipe;
+import net.minecraft.inventory.IInventory;
+import net.minecraft.item.ItemStack;
+import net.minecraft.item.crafting.IRecipe;
+import net.minecraft.item.crafting.Ingredient;
+import net.minecraft.item.crafting.ShapedRecipe;
+import net.minecraft.util.JSONUtils;
+import net.minecraft.util.NonNullList;
+import net.minecraft.util.ResourceLocation;
 
 public class RecipePredicate 
 {
@@ -34,7 +34,7 @@ public class RecipePredicate
 		this.result = result;
 	}
 	
-	protected boolean innerMatches(Recipe<? extends Container> recipe)
+	protected boolean innerMatches(IRecipe<? extends IInventory> recipe)
 	{
 		if (this.id != null && !this.id.equals(recipe.getId()))
 		{
@@ -109,19 +109,19 @@ public class RecipePredicate
 		{
 			if (json != null && !json.isJsonNull()) 
 			{
-				JsonObject jsonObj = GsonHelper.convertToJsonObject(json, "recipe");
-				String rawId = GsonHelper.getAsString(jsonObj, "id", null);
+				JsonObject jsonObj = JSONUtils.convertToJsonObject(json, "recipe");
+				String rawId = JSONUtils.getAsString(jsonObj, "id", null);
 				
 				ResourceLocation id = rawId == null ? null : new ResourceLocation(rawId);
-				String group = GsonHelper.getAsString(jsonObj, "group", null);
+				String group = JSONUtils.getAsString(jsonObj, "group", null);
 				
 				@SuppressWarnings("unused")
-				JsonArray rawIngredients = GsonHelper.getAsJsonArray(jsonObj, "ingredients", null);
+				JsonArray rawIngredients = JSONUtils.getAsJsonArray(jsonObj, "ingredients", null);
 				//lazy
 				NonNullList<Ingredient> ingredients = NonNullList.create();
 				
-				JsonObject rawResult = GsonHelper.getAsJsonObject(jsonObj, "result", null);
-				ItemStack result = rawResult == null ? null : ShapedRecipe.itemStackFromJson(rawResult);
+				JsonObject rawResult = JSONUtils.getAsJsonObject(jsonObj, "result", null);
+				ItemStack result = rawResult == null ? null : ShapedRecipe.itemFromJson(rawResult);
 				
 				return new Fishing(id, group, ingredients, result);
 			}

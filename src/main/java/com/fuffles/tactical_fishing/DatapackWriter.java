@@ -15,9 +15,9 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.stream.JsonWriter;
 
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.item.FishingRodItem;
-import net.minecraft.world.item.Items;
+import net.minecraft.item.FishingRodItem;
+import net.minecraft.item.Items;
+import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.common.crafting.conditions.ModLoadedCondition;
 import net.minecraftforge.fml.loading.FMLLoader;
 import net.minecraftforge.fml.loading.moddiscovery.ModInfo;
@@ -177,9 +177,9 @@ public class DatapackWriter
 			try(Reader reader = Files.newReader(mcmeta, StandardCharsets.UTF_8))
 			{
 				JsonObject obj = gson.fromJson(reader, JsonObject.class);
-				if (obj.has("pack") && obj.get("pack") instanceof JsonObject pack && pack.has("last_mods") && pack.get("last_mods") instanceof JsonArray mods)
+				if (obj.has("pack") && obj.get("pack") instanceof JsonObject && ((JsonObject)obj.get("pack")).has("last_mods") && ((JsonObject)obj.get("pack")).get("last_mods") instanceof JsonArray)
 				{
-					for (JsonElement mod : mods)
+					for (JsonElement mod : ((JsonArray)((JsonObject)obj.get("pack")).get("last_mods")))
 					{
 						if (!mod.isJsonNull() && mod.isJsonPrimitive())
 						{
