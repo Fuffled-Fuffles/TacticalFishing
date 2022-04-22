@@ -5,9 +5,8 @@ import java.io.Reader;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 
-import org.apache.commons.compress.utils.Lists;
-
 import com.fuffles.tactical_fishing.lib.Resources;
+import com.google.common.collect.Lists;
 import com.google.common.io.Files;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;

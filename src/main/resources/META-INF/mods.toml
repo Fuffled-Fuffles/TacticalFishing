@@ -1,5 +1,5 @@
 modLoader="javafml"
-loaderVersion="[39,)"
+loaderVersion="[37,)"
 license="Check Curseforge for details"
 
 [[mods]]
@@ -15,6 +15,6 @@ license="Check Curseforge for details"
 [[dependencies.tactical_fishing]]
     modId="forge"
     mandatory=true
-    versionRange="[39,)"
+    versionRange="[37,)"
     ordering="NONE"
     side="BOTH"

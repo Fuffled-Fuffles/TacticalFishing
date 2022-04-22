@@ -8,24 +8,21 @@ buildscript {
 		classpath 'org.spongepowered:mixingradle:0.7.+'
     }
 }
-
-plugins {
-    id 'eclipse'
-    id 'maven-publish'
-}
 apply plugin: 'net.minecraftforge.gradle'
+apply plugin: 'eclipse'
+apply plugin: 'maven-publish'
 apply plugin: 'org.spongepowered.mixin'
 
 version = '1.1'
 group = 'com.fuffles.tactical_fishing'
 archivesBaseName = 'tactical_fishing'
 
-java.toolchain.languageVersion = JavaLanguageVersion.of(17)
+java.toolchain.languageVersion = JavaLanguageVersion.of(16)
 
-println "Java: ${System.getProperty 'java.version'}, JVM: ${System.getProperty 'java.vm.version'} (${System.getProperty 'java.vendor'}), Arch: ${System.getProperty 'os.arch'}"
+println('Java: ' + System.getProperty('java.version') + ' JVM: ' + System.getProperty('java.vm.version') + '(' + System.getProperty('java.vendor') + ') Arch: ' + System.getProperty('os.arch'))
 minecraft {
-
-    mappings channel: 'official', version: '1.18.1'
+    
+    mappings channel: 'official', version: '1.17.1'
 
     accessTransformer = file('src/main/resources/META-INF/accesstransformer.cfg')
 
@@ -34,7 +31,6 @@ minecraft {
             workingDirectory project.file('run')
             property 'forge.logging.markers', 'REGISTRIES'
             property 'forge.logging.console.level', 'debug'
-            property 'forge.enabledGameTestNamespaces', 'tactical_fishing'
 
             mods {
                 tactical_fishing {
@@ -47,7 +43,6 @@ minecraft {
             workingDirectory project.file('run')
             property 'forge.logging.markers', 'REGISTRIES'
             property 'forge.logging.console.level', 'debug'
-			property 'forge.enabledGameTestNamespaces', 'tactical_fishing'
 
             mods {
                 tactical_fishing {
@@ -79,11 +74,12 @@ repositories {
 }
 
 dependencies {
-    minecraft 'net.minecraftforge:forge:1.18.1-39.1.2'
-	annotationProcessor 'org.spongepowered:mixin:0.8.5:processor'
     
-	compileOnly fg.deobf("mezz.jei:jei-1.18.1:9.4.1.172:api")
-  	runtimeOnly fg.deobf("mezz.jei:jei-1.18.1:9.4.1.172")
+    minecraft 'net.minecraftforge:forge:1.17.1-37.1.1'
+	annotationProcessor 'org.spongepowered:mixin:0.8.4:processor'
+    
+	compileOnly fg.deobf("mezz.jei:jei-1.17.1:8.3.1.62:api")
+  	runtimeOnly fg.deobf("mezz.jei:jei-1.17.1:8.3.1.62")
 }
 
 jar {

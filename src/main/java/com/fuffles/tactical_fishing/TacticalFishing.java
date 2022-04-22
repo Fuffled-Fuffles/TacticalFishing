@@ -11,6 +11,7 @@ import com.fuffles.tactical_fishing.common.entity.FishingVisual;
 import com.fuffles.tactical_fishing.common.item.crafting.FishingRecipe;
 import com.fuffles.tactical_fishing.lib.RecipeTypes;
 
+import net.minecraft.Util;
 import net.minecraft.core.NonNullList;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.item.ItemEntity;
@@ -55,7 +56,7 @@ public class TacticalFishing implements Proxy
     private Optional<FishingRecipe> getFishingRecipe(ServerPlayer player, NonNullList<ItemStack> fish)
     {
     	return player.getServer().getRecipeManager().byType(RecipeTypes.FISHING).values().stream().flatMap((recipe) -> {
-    		return this.tryMatch((FishingRecipe)recipe, player, fish).stream();
+    		return Util.toStream(this.tryMatch((FishingRecipe)recipe, player, fish));
     	}).findFirst();
     }
     
