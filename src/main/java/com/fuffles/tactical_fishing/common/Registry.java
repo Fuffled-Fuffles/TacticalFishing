@@ -16,7 +16,7 @@ public class Registry
 	private static void registerRecipeType(RecipeType<?> type)
 	{
 		ResourceLocation id = new ResourceLocation(type.toString());
-		if (!net.minecraft.core.Registry.RECIPE_TYPE.containsKey(id))
+		if (net.minecraft.core.Registry.RECIPE_TYPE.get(id) == null)
 		{
 			net.minecraft.core.Registry.register(net.minecraft.core.Registry.RECIPE_TYPE, new ResourceLocation(type.toString()), type);
 		}
