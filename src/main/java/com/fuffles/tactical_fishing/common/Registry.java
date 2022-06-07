@@ -27,7 +27,6 @@ public class Registry
 	{
 		event.getRegistry().register(RecipeSerializers.FISHING);
 		Registry.registerRecipeType(RecipeTypes.FISHING);
-		@SuppressWarnings("unused")
 		CriterionTrigger<?> callOnly = CriteriaTriggers.FISHING_CRAFTING;
 	}
 }
