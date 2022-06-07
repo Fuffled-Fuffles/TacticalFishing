@@ -16,10 +16,10 @@ public class Registry
 	private static void registerRecipeType(IRecipeType<?> type)
 	{
 		ResourceLocation id = new ResourceLocation(type.toString());
-		if (!net.minecraft.util.registry.Registry.RECIPE_TYPE.containsKey(id))
+		if (net.minecraft.util.registry.Registry.RECIPE_TYPE.get(id) == null)
 		{
 			net.minecraft.util.registry.Registry.register(net.minecraft.util.registry.Registry.RECIPE_TYPE, new ResourceLocation(type.toString()), type);
-		}
+		} 
 	}
 	
 	@SubscribeEvent
