@@ -1,40 +1,27 @@
-buildscript {
-    repositories {
-        maven { url = 'https://maven.minecraftforge.net' }
-        mavenCentral()
-    }
-    dependencies {
-        classpath group: 'net.minecraftforge.gradle', name: 'ForgeGradle', version: '5.1.+', changing: true
-		classpath 'org.spongepowered:mixingradle:0.7.+'
-    }
-}
-
 plugins {
     id 'eclipse'
     id 'maven-publish'
+    id 'net.minecraftforge.gradle' version '5.1.+'
+	id 'org.spongepowered.mixin' version '0.7.+'
 }
-apply plugin: 'net.minecraftforge.gradle'
-apply plugin: 'org.spongepowered.mixin'
 
-version = '1.1'
-group = 'com.fuffles.tactical_fishing'
+version = '1.0'
+group = 'fuffles.tactical_fishing'
 archivesBaseName = 'tactical_fishing'
 
 java.toolchain.languageVersion = JavaLanguageVersion.of(17)
 
 println "Java: ${System.getProperty 'java.version'}, JVM: ${System.getProperty 'java.vm.version'} (${System.getProperty 'java.vendor'}), Arch: ${System.getProperty 'os.arch'}"
 minecraft {
-
-    mappings channel: 'official', version: '1.18.1'
-
-    accessTransformer = file('src/main/resources/META-INF/accesstransformer.cfg')
+    mappings channel: 'official', version: '1.20.1'
+    accessTransformer = file('src/main/resources/META-INF/accesstransformer.cfg') // Currently, this location cannot be changed from the default.
 
     runs {
         client {
             workingDirectory project.file('run')
+
             property 'forge.logging.markers', 'REGISTRIES'
             property 'forge.logging.console.level', 'debug'
-            property 'forge.enabledGameTestNamespaces', 'tactical_fishing'
 
             mods {
                 tactical_fishing {
@@ -42,27 +29,14 @@ minecraft {
                 }
             }
         }
-
+        
         server {
-            workingDirectory project.file('run')
-            property 'forge.logging.markers', 'REGISTRIES'
+        	workingDirectory project.file('run')
+        	
+        	property 'forge.logging.markers', 'REGISTRIES'
             property 'forge.logging.console.level', 'debug'
-			property 'forge.enabledGameTestNamespaces', 'tactical_fishing'
-
-            mods {
-                tactical_fishing {
-                    source sourceSets.main
-                }
-            }
-        }
-
-        data {
-            workingDirectory project.file('run')
-            property 'forge.logging.markers', 'REGISTRIES'
-            property 'forge.logging.console.level', 'debug'
-            args '--mod', 'tactical_fishing', '--all', '--output', file('src/generated/resources/'), '--existing', file('src/main/resources/')
-
-            mods {
+        	
+        	mods {
                 tactical_fishing {
                     source sourceSets.main
                 }
@@ -74,27 +48,43 @@ minecraft {
 sourceSets.main.resources { srcDir 'src/generated/resources' }
 
 repositories {
-    maven { url = "https://dvs1.progwml6.com/files/maven/" } //JEI
+	maven {
+		url "https://cursemaven.com"
+		content {
+			includeGroup "curse.maven"
+		}
+	}
+	maven { url = "https://maven.blamejared.com/" } //JEI
 	maven { url = "https://modmaven.dev" } //JEI
 }
 
 dependencies {
-    minecraft 'net.minecraftforge:forge:1.18.1-39.1.2'
+    minecraft 'net.minecraftforge:forge:1.20.1-47.2.1'
 	annotationProcessor 'org.spongepowered:mixin:0.8.5:processor'
-    
-	compileOnly fg.deobf("mezz.jei:jei-1.18.1:9.4.1.172:api")
-  	runtimeOnly fg.deobf("mezz.jei:jei-1.18.1:9.4.1.172")
+	
+    compileOnly fg.deobf("mezz.jei:jei-1.20.1-common-api:15.2.0.27")
+    compileOnly fg.deobf("mezz.jei:jei-1.20.1-forge-api:15.2.0.27")
+	
+  	runtimeOnly fg.deobf("mezz.jei:jei-1.20.1-forge:15.2.0.27")
+}
+
+mixin {
+    add sourceSets.main, 'tactical_fishing.refmap.json'
+    config 'tactical_fishing.mixin.json'
+
+    debug.verbose = true
+    debug.export = true
 }
 
 jar {
     manifest {
         attributes([
                 "Specification-Title"     : "tactical_fishing",
-                "Specification-Vendor"    : "tactical_fishingsareus",
+                "Specification-Vendor"    : "Fuffles_",
                 "Specification-Version"   : "1",
                 "Implementation-Title"    : project.name,
                 "Implementation-Version"  : project.jar.archiveVersion,
-                "Implementation-Vendor"   : "tactical_fishingsareus",
+                "Implementation-Vendor"   : "Fuffles_",
                 "Implementation-Timestamp": new Date().format("yyyy-MM-dd'T'HH:mm:ssZ")
         ])
     }
@@ -115,7 +105,6 @@ publishing {
     }
 }
 
-mixin {
-    add sourceSets.main, 'tactical_fishing.refmap.json'
-    config 'tactical_fishing.mixins.json'
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
 }
