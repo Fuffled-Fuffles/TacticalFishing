@@ -1,0 +1,8 @@
+{
+  "defaultLiquidBucket": "minecraft:water_bucket",
+  "fishBucketToFish": {},
+  "liquidBucketToFishBucket": {},
+  "populateFishingRodTag": true,
+  "generateFishBucketRecipes": true,
+  "blacklist": []
+}
